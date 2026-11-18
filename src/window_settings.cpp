@@ -635,6 +635,16 @@ void Window_Settings::RefreshInput() {
 	AddOption(cfg.gamepad_swap_dpad_with_buttons, [&cfg](){ cfg.gamepad_swap_dpad_with_buttons.Toggle(); Input::ResetTriggerKeys(); });
 	AddOption(cfg.speed_modifier_a, [this, &cfg](){ cfg.speed_modifier_a.Set(GetCurrentOption().current_value); });
 	AddOption(cfg.speed_modifier_b, [this, &cfg](){ cfg.speed_modifier_b.Set(GetCurrentOption().current_value); });
+	AddOption(cfg.message_skip, [this, &cfg](){ cfg.message_skip.Set(static_cast<ConfigEnum::MessageSkip>(GetCurrentOption().current_value)); });
+	if (cfg.message_skip.IsOptionVisible()) {
+		// Show what the game chose next to "Game default"
+		auto& opt = GetFrame().options.back();
+		std::string game_default = Player::game_config.message_skip.Get() ? "Game default (On)" : "Game default (Off)";
+		opt.options_text[0] = game_default;
+		if (cfg.message_skip.Get() == ConfigEnum::MessageSkip::Game) {
+			opt.value_text = game_default;
+		}
+	}
 }
 
 void Window_Settings::RefreshButtonCategory() {

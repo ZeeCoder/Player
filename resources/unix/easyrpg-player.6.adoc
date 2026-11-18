@@ -349,6 +349,10 @@ Options in section 'Game':
 *Engine*=_ENGINE_::
   Same as *--engine*.
 
+*MessageSkip*=_1_::
+  Pressing the Decision key while a message is being typed shows the rest of
+  the page at once. Players can override this in the settings.
+
 Options in section 'Patch' (see also options starting with *--patch*):
 
 *AntiLagSwitch*=_SWITCH_::

@@ -33,6 +33,7 @@
 #include "game_system.h"
 #include "game_variables.h"
 #include "input.h"
+#include "input_source.h"
 #include "output.h"
 #include "player.h"
 #include "util_macro.h"
@@ -139,6 +140,18 @@ namespace {
 	bool IsDecisionOrMouseTriggered() {
 		return Input::IsTriggered(Input::DECISION) ||
 			(Main_Data::game_system->IsMessageMouseEnabled() && Input::IsTriggered(Input::MOUSE_LEFT));
+	}
+
+	/** Whether Decision completes a typing page: the player's setting, else the game's */
+	bool IsMessageSkipEnabled() {
+		switch (Input::GetInputSource()->GetConfig().message_skip.Get()) {
+			case ConfigEnum::MessageSkip::On:
+				return true;
+			case ConfigEnum::MessageSkip::Off:
+				return false;
+			default:
+				return Player::game_config.message_skip.Get();
+		}
 	}
 }
 
@@ -277,6 +290,7 @@ void Window_Message::InsertNewPage() {
 	speed = 1;
 	kill_page = false;
 	instant_speed = false;
+	skip_page = false;
 	prev_char_printable = false;
 	prev_char_waited = true;
 
@@ -453,6 +467,16 @@ void Window_Message::Update() {
 		return;
 	}
 
+	// Decision while a page is typing shows the rest of the page at once (also cuts \| and \.
+	// waits); the next press closes it as usual. Not RPG_RT behaviour: off unless the game's
+	// EasyRPG.ini or the player's settings turn it on.
+	if (!skip_page && IsMessageSkipEnabled() && !GetPause() && GetIndex() < 0 && !number_input_window->GetActive()
+			&& text_index != text.data() + text.size() && IsDecisionOrMouseTriggered()) {
+		DebugLog("{}: MSG SKIP PAGE");
+		skip_page = true;
+		wait_count = 0;
+	}
+
 	if (wait_count > 0) {
 		DebugLog("{}: MSG WAIT {}", wait_count);
 		--wait_count;
@@ -461,6 +485,8 @@ void Window_Message::Update() {
 
 	if (GetPause()) {
 		DebugLog("{}: MSG PAUSE");
+		// A skip ends where the text waits for a key: the page end or \!
+		skip_page = false;
 		WaitForInput();
 
 		if (GetPause()) {
@@ -492,8 +518,8 @@ void Window_Message::UpdateMessage() {
 	// Message Box Show Message rendering loop
 	bool instant_speed_forced = false;
 
-	if ((Player::debug_flag || Main_Data::game_system->IsFastForwardText()) &&
-		(Input::IsPressed(Input::SHIFT) || Input::IsPressed(Input::DEBUG_MESSAGE_FAST_FORWARD))) {
+	if (skip_page || ((Player::debug_flag || Main_Data::game_system->IsFastForwardText()) &&
+		(Input::IsPressed(Input::SHIFT) || Input::IsPressed(Input::DEBUG_MESSAGE_FAST_FORWARD)))) {
 			instant_speed = true;
 			instant_speed_forced = true;
 	}
@@ -656,8 +682,11 @@ void Window_Message::UpdateMessage() {
 				break;
 			case '<':
 				// Instant speed stop - also cancels shift key and forces a delay.
-				instant_speed = false;
-				instant_speed_forced = false;
+				// A skip by the player still wins.
+				if (!skip_page) {
+					instant_speed = false;
+					instant_speed_forced = false;
+				}
 				DebugLogText("{}: MSG Instant Speed Stop \\<");
 				SetWaitForNonPrintable(speed);
 				break;

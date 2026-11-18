@@ -161,6 +161,8 @@ protected:
 	bool kill_page = false;
 	/** If instant speed is enabled */
 	bool instant_speed = false;
+	/** The player pressed Decision while the page was typing: show the rest of it at once. */
+	bool skip_page = false;
 
 	// FIXME: This hacky flags exist because RPG_RT likely animates the message window
 	// after the game loop finishes. Our code isn't structured that way, so we must hack
