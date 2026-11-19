@@ -290,6 +290,7 @@ void Window_Message::InsertNewPage() {
 	speed = 1;
 	kill_page = false;
 	instant_speed = false;
+	text_instant_speed = false;
 	skip_page = false;
 	prev_char_printable = false;
 	prev_char_waited = true;
@@ -485,8 +486,12 @@ void Window_Message::Update() {
 
 	if (GetPause()) {
 		DebugLog("{}: MSG PAUSE");
-		// A skip ends where the text waits for a key: the page end or \!
-		skip_page = false;
+		// A skip ends where the text waits for a key: the page end or \!. The text after a \!
+		// goes back to its own speed (instant only inside \> ... \<).
+		if (skip_page) {
+			skip_page = false;
+			instant_speed = text_instant_speed;
+		}
 		WaitForInput();
 
 		if (GetPause()) {
@@ -597,6 +602,7 @@ void Window_Message::UpdateMessage() {
 			}
 			SetWait(wait_frames);
 
+			text_instant_speed = false;
 			if (instant_speed && !instant_speed_forced) {
 				// instant_speed stops at the end of the line
 				// unless it was triggered by the shift key.
@@ -679,10 +685,12 @@ void Window_Message::UpdateMessage() {
 				DebugLogText("{}: MSG Instant Speed Start \\>");
 				SetWaitForNonPrintable(0);
 				instant_speed = true;
+				text_instant_speed = true;
 				break;
 			case '<':
 				// Instant speed stop - also cancels shift key and forces a delay.
 				// A skip by the player still wins.
+				text_instant_speed = false;
 				if (!skip_page) {
 					instant_speed = false;
 					instant_speed_forced = false;
