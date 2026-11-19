@@ -52,6 +52,12 @@ namespace ConfigEnum {
 		Ultrawide
 	};
 
+	enum class MessageSkip {
+		Game,
+		On,
+		Off
+	};
+
 	enum class StartupLogos {
 		None,
 		Custom,
@@ -164,6 +170,11 @@ struct Game_ConfigInput {
 	BoolConfigParam gamepad_swap_analog{ "Gamepad: Swap Analog Sticks", "Swap left and right stick", "Input", "GamepadSwapAnalog", false };
 	BoolConfigParam gamepad_swap_dpad_with_buttons{ "Gamepad: Swap D-Pad with buttons", "Swap D-Pad with ABXY-Buttons", "Input", "GamepadSwapDpad", false };
 	BoolConfigParam gamepad_swap_ab_and_xy{ "Gamepad: Swap AB and XY", "Swap A and B with X and Y", "Input", "GamepadSwapAbxy", false };
+	EnumConfigParam<ConfigEnum::MessageSkip, 3> message_skip{
+		"Enter completes text", "Enter shows a typing message in full", "Input", "MessageSkip", ConfigEnum::MessageSkip::Game,
+		Utils::MakeSvArray("Game default", "On", "Off"),
+		Utils::MakeSvArray("game", "on", "off"),
+		Utils::MakeSvArray("Do what the game chose", "Always", "Never: Enter only moves on, as in RPG Maker")};
 	Input::ButtonMappingArray buttons;
 
 	void Hide();

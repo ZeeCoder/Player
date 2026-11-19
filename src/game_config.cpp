@@ -664,6 +664,7 @@ void Game_Config::LoadFromStream(Filesystem_Stream::InputStream& is) {
 	input.gamepad_swap_ab_and_xy.FromIni(ini);
 	input.speed_modifier_a.FromIni(ini);
 	input.speed_modifier_b.FromIni(ini);
+	input.message_skip.FromIni(ini);
 
 	/** PLAYER SECTION */
 	player.settings_autosave.FromIni(ini);
@@ -752,6 +753,7 @@ void Game_Config::WriteToStream(Filesystem_Stream::OutputStream& os) const {
 	input.gamepad_swap_ab_and_xy.ToIni(os);
 	input.speed_modifier_a.ToIni(os);
 	input.speed_modifier_b.ToIni(os);
+	input.message_skip.ToIni(os);
 
 	os << "\n";
 

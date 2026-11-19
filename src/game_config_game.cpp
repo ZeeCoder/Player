@@ -215,6 +215,7 @@ void Game_ConfigGame::LoadFromStream(Filesystem_Stream::InputStream& is) {
 	engine_str.FromIni(ini);
 	engine_path.FromIni(ini);
 	fake_resolution.FromIni(ini);
+	message_skip.FromIni(ini);
 
 	if (patch_easyrpg.FromIni(ini)) {
 		patch_override = true;
